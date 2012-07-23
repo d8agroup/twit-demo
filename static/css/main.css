@@ -1,0 +1,32 @@
+.tweet-container {
+    background-color: #EEEEEE;
+    border-radius: 8px;
+    -moz-border-radius: 8px;
+    -webkit-border-radius: 8px;
+    box-shadow: 3px 3px 4px #DDD;
+    -moz-box-shadow: 3px 3px 4px #DDD;
+    -webkit-box-shadow: 3px 3px 4px #DDD;
+    padding: 2px 10px 2px 10px;
+    margin-bottom: 8px;
+}
+
+.from_user {
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.filter {
+    background-color: #BBB;
+    border-radius: 8px;
+    -moz-border-radius: 8px;
+    -webkit-border-radius: 8px;
+    box-shadow: 3px 3px 4px #DDD;
+    -moz-box-shadow: 3px 3px 4px #DDD;
+    -webkit-box-shadow: 3px 3px 4px #DDD;
+    padding: 2px 10px 2px 10px;
+    margin-bottom: 8px;
+}
+
+.filter .filter-remove {
+    float: right;
+}

@@ -1,0 +1,50 @@
+<!DOCTYPE HTML>
+<html lang="en">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+        <link rel="shortcut icon" href="{{ STATIC_URL }}images/favicon.ico" />
+        <title>MetaLayer | Twitter Demo</title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js" type="text/javascript"></script>
+        <script src="http://ajax.microsoft.com/ajax/jquery.templates/beta1/jquery.tmpl.min.js" type="text/javascript"></script>
+        <script src="{{ STATIC_URL }}js/main.js" type="text/javascript"></script>
+        <!--[if lt IE 8]>
+        <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+        <![endif]-->
+        <link rel="stylesheet" href="{{ STATIC_URL }}css/bootstrap.css"/>
+        <link rel="stylesheet" href="{{ STATIC_URL }}css/main.css"/>
+        <script id="filter-tpl" type="text/x-jquery-tmpl">
+            <div class="filter">
+                <span class="filter-type">${ filter.type }:</span>
+                <span class="filter-value">${ filter.value }</span>
+                <span class="filter-remove">X</span>
+            </div>
+        </script>
+        <script id="tweet-container-tpl" type="text/x-jquery-tmpl">
+            <div class="tweet-container">
+                <span class="from_user">${ tweet.from_user }</span>:
+                <span class="text">${ tweet.text }</span>
+                (<span class="iso_language_code">${ tweet.iso_language_code }</span>)
+            </div>
+        </script>
+    </head>
+    <body>
+        <div class="container-fluid">
+            <div class="row-fluid">
+                <div class="span2"></div>
+                <div id="filter-list" class="span2">
+                    <h2>Active Filters:</h2>
+                </div>
+                <div id="tweet-list" class="span6">
+                    <h2>Tweets {{ tweets|length }} of {{ tweets.hits }}</h2>
+                    {% for tweet in tweets %}
+                    <div class="tweet-container">
+                        <span class="from_user">{{ tweet.from_user }}</span>:
+                        <span class="text">{{ tweet.text }}</span>
+                        (<span class="iso_language_code">{{ tweet.iso_language_code }}</span>)
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </body>
+</html>
