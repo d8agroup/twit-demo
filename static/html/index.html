@@ -14,16 +14,16 @@
         <link rel="stylesheet" href="{{ STATIC_URL }}css/main.css"/>
         <script id="filter-tpl" type="text/x-jquery-tmpl">
             <div class="filter">
-                <span class="filter-type">${ filter.type }:</span>
+                <span class="filter-type">${ filter.type }</span>:
                 <span class="filter-value">${ filter.value }</span>
                 <span class="filter-remove">X</span>
             </div>
         </script>
-        <script id="tweet-container-tpl" type="text/x-jquery-tmpl">
-            <div class="tweet-container">
+        <script id="tweet-item-tpl" type="text/x-jquery-tmpl">
+            <div class="tweet-item">
                 <span class="from_user">${ tweet.from_user }</span>:
                 <span class="text">${ tweet.text }</span>
-                (<span class="iso_language_code">${ tweet.iso_language_code }</span>)
+                [<span class="iso_language_code">${ tweet.iso_language_code }</span>]
             </div>
         </script>
     </head>
@@ -34,15 +34,17 @@
                 <div id="filter-list" class="span2">
                     <h2>Active Filters:</h2>
                 </div>
-                <div id="tweet-list" class="span6">
-                    <h2>Tweets {{ tweets|length }} of {{ tweets.hits }}</h2>
+                <div id="tweet-container" class="span6">
+                    <h2>Tweets {{ tweets|length }} of {{ hits }}</h2>
+                    <div id="tweet-list">
                     {% for tweet in tweets %}
-                    <div class="tweet-container">
-                        <span class="from_user">{{ tweet.from_user }}</span>:
-                        <span class="text">{{ tweet.text }}</span>
-                        (<span class="iso_language_code">{{ tweet.iso_language_code }}</span>)
-                    </div>
+                        <div class="tweet-item">
+                            <span class="from_user">{{ tweet.from_user }}</span>:
+                            <span class="text">{{ tweet.text }}</span>
+                            [<span class="iso_language_code">{{ tweet.iso_language_code }}</span>]
+                        </div>
                     {% endfor %}
+                    </div>
                 </div>
             </div>
         </div>

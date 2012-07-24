@@ -1,4 +1,4 @@
-.tweet-container {
+.tweet-item {
     background-color: #EEEEEE;
     border-radius: 8px;
     -moz-border-radius: 8px;
@@ -10,7 +10,7 @@
     margin-bottom: 8px;
 }
 
-.from_user {
+.from_user, .iso_language_code, .filter-remove {
     font-weight: bold;
     cursor: pointer;
 }
