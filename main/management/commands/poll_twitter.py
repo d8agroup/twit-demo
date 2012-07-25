@@ -1,5 +1,5 @@
-"""Django custom command to periodically query Twitter's search API for a
-given term and add the Tweets to a Solr index. Additionally, we also ensure
+"""Django custom command to periodically query Twitter's search API for given
+terms and add the Tweets to a Solr index. Additionally, we also ensure
 that the index is bounded to a certain number of documents, essentially
 treating the index as a bounded FIFO. This assumes the "id" field in the Solr
 schema is an increasing numeric value.
@@ -17,13 +17,12 @@ import settings
 
 
 class Command(BaseCommand):
-    """Django custom command to periodically query Twitter's search API for a
-    given term and add them to a Solr index.
+    """Django custom command to periodically query Twitter's search API for
+    given terms and add them to a Solr index.
     """
 
     fields = ("created_at", "id", "from_user", "from_user_name", "geo",
         "iso_language_code", "profile_image_url", "text", "to_user")
-    search_term = "obama"
     max_index_size = 100000
     delete_chunk_size = 500
 
@@ -38,18 +37,22 @@ class Command(BaseCommand):
         super(Command, self).__init__()
 
     def handle(self, *args, **options):
-        """Using Twitter's search API, grab the latest Tweets for a given term
+        """Using Twitter's search API, grab the latest Tweets for given terms
         and add them to the Solr index.
         """
 
-        # Cursor is the last Tweet ID we've seen for this search term
+        query = " OR ".join(settings.SEARCH_TERMS)
+
+        self.log.info("Polling Twitter for query '%s'" % query)
+
+        # Cursor is the last Tweet ID we've seen for this query
         cursor = self._retrieve_cursor()
-        tweets = self._retrieve_tweets(self.search_term, since_id=cursor)
+        tweets = self._retrieve_tweets(query, since_id=cursor)
         self._truncate_index(len(tweets))
         self._index_tweets(tweets)
 
     def _retrieve_cursor(self):
-        """Retrieve the max Tweet ID using the Solr index."""
+        """Retrieve the max Tweet ID for this query using the Solr index."""
 
         results = self.solr.search("*:*", fl="id", sort="id desc", rows=1)
 
@@ -59,12 +62,12 @@ class Command(BaseCommand):
 
         num_docs = results.docs[0]['id']
 
-        self.log.info("Max Tweet ID from Solr Index: %s" % num_docs)
+        self.log.info("Max Tweet ID from Solr index: %d." % num_docs)
 
         return num_docs
 
-    def _retrieve_tweets(self, search_term, since_id=None):
-        """Retrieve the latest Tweets for the given search term. Optionally can
+    def _retrieve_tweets(self, query, since_id=None):
+        """Retrieve the latest Tweets for the given query. Optionally can
         specify the last seen Tweet ID.
         """
 
@@ -77,11 +80,11 @@ class Command(BaseCommand):
         while True:
             self.log.info("Fetching page %d." % page)
             try:
-                new_tweets = self.twitter.search(q=search_term, page=page,
+                new_tweets = self.twitter.search(q=query, page=page,
                     rpp=max_results, since_id=since_id, result_type="recent")
             except tweepy.error.TweepError as te:
                 self.log.error("Error retrieving tweets: %s" % te)
-                return []
+                break
 
             self.log.info("Got %d results." % len(new_tweets))
             tweets += new_tweets

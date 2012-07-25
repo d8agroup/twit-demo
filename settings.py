@@ -152,3 +152,5 @@ SOLR_CONNECTION = {
         'URL': 'http://127.0.0.1:8983/solr'
     },
 }
+
+SEARCH_TERMS = ('#olympics', '#london2012',)
