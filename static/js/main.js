@@ -31,7 +31,7 @@ $(document).ready(function() {
 
         var query = query_fragments.join("&");
 
-        $.get("/filter", query, function(data) {
+        $.get("/search", query, function(data) {
             $("#tweet-container h2").html("Tweets " + data.tweets.length + " of " + data.hits);
             var html = "";
             $("#tweet-list").fadeOut(function() {

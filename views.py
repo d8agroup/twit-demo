@@ -1,7 +1,11 @@
+"""Views for the Twitter demo project."""
+
 import json
+import time
 
 import pysolr
-from django.http import HttpResponse, HttpResponseServerError
+import pymongo
+from django.http import HttpResponse
 from django.shortcuts import render
 
 import settings
@@ -12,6 +16,8 @@ FILTER_MAP = {
     "language": "iso_language_code",
 }
 
+_MONGO_CLIENT = None
+
 
 def index(request):
     """Retreive the most recent 50 Tweets."""
@@ -21,7 +27,7 @@ def index(request):
     return render(request, "index.html", tweets)
 
 
-def filter(request):
+def search(request):
     """Retrieve Tweets using the specified filters."""
 
     filters = []
@@ -44,7 +50,7 @@ def filter(request):
     return HttpResponse(json.dumps(tweets), "application/json")
 
 
-def _retrieve_tweets(query="*:*", n=50):
+def _retrieve_tweets(query="*:*", rows=50):
     """Fire off a request to Solr."""
 
     solr = pysolr.Solr(settings.SOLR_CONNECTION['twit-demo']['URL'])
@@ -53,13 +59,32 @@ def _retrieve_tweets(query="*:*", n=50):
         "facet": "true",
         "facet.limit": 10,
         "facet.mincount": 1,
-        "facet.field": ["from_user", "iso_language_code"]
+        "facet.field": ["from_user", "iso_language_code"],
     }
 
-    # TODO: Log these queries to MongoDB
-    # pymongo.update()
+    _log_query(query, rows, params)
 
     # Fetch the newest N Tweets. Should try/except this too...
-    results = solr.search(query, sort="id desc", rows=n, **params)
+    results = solr.search(query, sort="id desc", rows=rows, **params)
 
-    return {"tweets": results.docs, "hits": results.hits, "facets": results.facets}
+    return {"tweets": results.docs, "hits": results.hits,
+        "facets": results.facets}
+
+
+def _log_query(query, rows, params):
+    """Log the attributes of a Solr query to MongoDB."""
+    global _MONGO_CLIENT
+
+    if not _MONGO_CLIENT:
+        _MONGO_CLIENT = pymongo.Connection(host="127.0.0.1", port=27017)
+
+    # Have to swap out periods for hyphens
+    params = dict((k.replace(".", "_"), v) for k, v in params.items())
+
+    db = _MONGO_CLIENT.twit_demo
+    db.query_logs.save(dict({
+        "raw_query": query,
+        "params": filter(None, query.split("+")),
+        "rows": rows,
+        "time": int(time.time()),
+    }, **params))
