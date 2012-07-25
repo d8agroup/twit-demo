@@ -49,8 +49,17 @@ def _retrieve_tweets(query="*:*", n=50):
 
     solr = pysolr.Solr(settings.SOLR_CONNECTION['twit-demo']['URL'])
 
-    # TODO: Log these queries to MongoDB
-    # Fetch the newest N Tweets. Should try/except this too...
-    results = solr.search(query, sort="id desc", rows=n)
+    params = {
+        "facet": "true",
+        "facet.limit": 10,
+        "facet.mincount": 1,
+        "facet.field": ["from_user", "iso_language_code"]
+    }
 
-    return {"tweets": results.docs, "hits": results.hits}
+    # TODO: Log these queries to MongoDB
+    # pymongo.update()
+
+    # Fetch the newest N Tweets. Should try/except this too...
+    results = solr.search(query, sort="id desc", rows=n, **params)
+
+    return {"tweets": results.docs, "hits": results.hits, "facets": results.facets}

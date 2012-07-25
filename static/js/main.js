@@ -33,13 +33,28 @@ $(document).ready(function() {
 
         $.get("/filter", query, function(data) {
             $("#tweet-container h2").html("Tweets " + data.tweets.length + " of " + data.hits);
-            var tpl = $("#tweet-item-tpl");
             var html = "";
             $("#tweet-list").fadeOut(function() {
-                $(this).html('');
+                $(this).html("");
+                var tpl = $("#tweet-item-tpl");
                 var tweet_list = this;
                 $.each(data.tweets, function(idx, tweet) {
                     $(tweet_list).append($(tpl).tmpl({"tweet": tweet}));
+                });
+                $(this).fadeIn();
+            });
+
+            $("#facet-list").fadeOut(function() {
+                var facet_tpl = $("#facet-tpl");
+                var facet_item_tpl = $("#facet-item-tpl");
+                $(this).html("");
+                var facet_list = this;
+                $.each(data.facets.facet_fields, function(facet_name, facet_items) {
+                    var facet_items_html = [];
+                    for (i = 0; i < facet_items.length; i += 2) {
+                        facet_items_html.push($(facet_item_tpl).tmpl({"val": facet_items[i], "num": facet_items[i+1]}).html());
+                    };
+                    $(facet_list).append($(facet_tpl).tmpl({"name": facet_name, "facet_items": facet_items_html.join("")}));
                 });
                 $(this).fadeIn();
             });
