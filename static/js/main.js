@@ -17,7 +17,7 @@ Filter.fromHTML = function(html) {
     );
 };
 
-var Filters = function() {
+var ActiveFilters = function() {
     this.filters = [];
     this.add = function(filter) {
         if (this.exists(filter) === false) {
@@ -29,7 +29,7 @@ var Filters = function() {
     this.remove = function(filter) {
         var idx = this.exists(filter);
         if (idx !== false) {
-            this.filters.pop(idx);
+            this.filters.splice(idx, 1);
             return true;
         };
         return false;
@@ -53,7 +53,7 @@ var Filters = function() {
     };
 };
 
-var filters = new Filters();
+var active_filters = new ActiveFilters();
 
 var fetch_tweets = function(options) {
     $.get("/search", options.query, options.success);
@@ -61,8 +61,19 @@ var fetch_tweets = function(options) {
 
 // Add a new filter to the list
 var add_filter = function(filter) {
-    if (filters.add(filter)) {
-        $("#filter-list").append(filter.toHTML());
+    if (active_filters.add(filter)) {
+        $(filter.toHTML()).hide().appendTo("#filter-list").fadeIn();
+        return true;
+    };
+    return false;
+};
+
+// Remove an active filter
+var remove_filter = function(filter, el) {
+    if (active_filters.remove(filter)) {
+        $(el).fadeOut(function() {
+            $(this).remove();
+        });
         return true;
     };
     return false;
@@ -71,7 +82,7 @@ var add_filter = function(filter) {
 // Fetch Tweets based on the active filters
 var update_tweets = function(tweets) {
 
-    var query = filters.build_query();
+    var query = active_filters.build_query();
 
     fetch_tweets({
         query: query,
@@ -123,10 +134,9 @@ $(document).ready(function() {
     });
 
     $("#filter-list").on("click", ".filter-remove", function(e) {
-        $(this).parent().fadeOut(function() {
-            filters.remove(Filter.fromHTML(this));
-            $(this).remove();
+        var filter = Filter.fromHTML($(this).parent());
+        if (remove_filter(filter, $(this).parent())) {
             update_tweets();
-        });
+        };
     });
 });
