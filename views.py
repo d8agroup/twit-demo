@@ -20,7 +20,7 @@ _MONGO_CLIENT = None
 
 
 def index(request):
-    """Retreive the most recent 50 Tweets."""
+    """Retreive the most recent N Tweets."""
 
     tweets = _retrieve_tweets()
 
@@ -50,7 +50,7 @@ def search(request):
     return HttpResponse(json.dumps(tweets), "application/json")
 
 
-def _retrieve_tweets(query="*:*", rows=50):
+def _retrieve_tweets(query="*:*", rows=25):
     """Fire off a request to Solr."""
 
     solr = pysolr.Solr(settings.SOLR_CONNECTION['twit-demo']['URL'])

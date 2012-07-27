@@ -41,3 +41,8 @@
 .filter .filter-remove {
     float: right;
 }
+
+#language-pie {
+    width: 500px;
+    height: 400px;
+}

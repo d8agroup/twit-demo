@@ -9,6 +9,9 @@
         <title>MetaLayer | Twitter Demo</title>
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js" type="text/javascript"></script>
         <script src="http://ajax.microsoft.com/ajax/jquery.templates/beta1/jquery.tmpl.min.js" type="text/javascript"></script>
+        <script src="http://ajax.microsoft.com/ajax/jquery.templates/beta1/jquery.tmpl.min.js" type="text/javascript"></script>
+        <script src="{{ STATIC_URL }}js/flot/jquery.flot.js" type="text/javascript"></script>
+        <script src="{{ STATIC_URL }}js/flot/jquery.flot.pie.js" type="text/javascript"></script>
         <script src="{{ STATIC_URL }}js/main.js" type="text/javascript"></script>
         <!--[if lt IE 8]>
         <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
@@ -59,7 +62,6 @@
     <body>
         <div class="container-fluid">
             <div class="row-fluid">
-                <div class="span2"></div>
                 <div id="left-sidebar" class="span2">
                     <div id="filter-list">
                         <h2>Active Filters:</h2>
@@ -84,8 +86,8 @@
                         {% endfor %}
                     </div>
                 </div>
-                <div id="tweet-container" class="span6">
-                    <h2>Tweets {{ tweets|length }} of {{ hits }}</h2>
+                <div id="tweet-container" class="span5">
+                    <h2>Most Recent {{ tweets|length }} Tweets of {{ hits }}</h2>
                     <div id="tweet-list">
                     {% for tweet in tweets %}
                         <div class="tweet-item clearfix">
@@ -100,6 +102,11 @@
                         </div>
                     {% endfor %}
                     </div>
+                </div>
+                <div id="visuals-container" class="span5">
+                    <h2>Visuals, Y'all!</h2>
+                    <h3>Language</h3>
+                    <div id="language-pie"></div>
                 </div>
             </div>
         </div>
