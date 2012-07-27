@@ -1,37 +1,81 @@
-$(document).ready(function() {
+var Filter = function Filter(type, value) {
+    this.type = type;
+    this.value = value;
 
-    function Filter(type, value) {
-        this.type = type;
-        this.value = value;
+    this.toHTML = function() {
+        Filter.template = Filter.template || $("#filter-tpl");
+        return $(Filter.template).tmpl({"filter": this});
+    };
+};
 
-        this.toHTML = function() {
-            return $(Filter.template).tmpl({"filter": this});
+Filter.template = null;
+
+Filter.fromHTML = function(html) {
+    return new Filter(
+        $(".filter-type", html).text().toLowerCase(),
+        $(".filter-value", html).text()
+    );
+};
+
+var Filters = function() {
+    this.filters = [];
+    this.add = function(filter) {
+        if (this.exists(filter) === false) {
+            this.filters.push(filter);
+            return true;
         };
+        return false;
     };
-
-    // Class variable so it's evaluated once
-    Filter.template = $("#filter-tpl");
-
-    Filter.fromHTML = function(html) {
-        return new Filter(
-            $(".filter-type", html).text().toLowerCase(),
-            $(".filter-value", html).text()
-        );
+    this.remove = function(filter) {
+        var idx = this.exists(filter);
+        if (idx !== false) {
+            this.filters.pop(idx);
+            return true;
+        };
+        return false;
     };
-
-    // Fetch Tweets based on the active filters
-    var update_tweets = function(tweets) {
-        var query_fragments = [];
-
-        // Very simple way to build the query, possible bug
-        $.each($("#filter-list .filter"), function(idx, active_filter) {
-            var filter = Filter.fromHTML(active_filter);
-            query_fragments.push(filter.type + "=" + filter.value)
+    this.exists = function(filter) {
+        var i = false;
+        $.each(this.filters, function(idx, active_filter) {
+            if (active_filter.type.toLowerCase() == filter.type.toLowerCase()) {
+                i = idx;
+                return false;
+            };
         });
+        return i;
+    };
+    this.build_query = function() {
+        var query = [];
+        $.each(this.filters, function(idx, filter) {
+            query.push(filter.type + "=" + filter.value);
+        });
+        return query.join("&");
+    };
+};
 
-        var query = query_fragments.join("&");
+var filters = new Filters();
 
-        $.get("/search", query, function(data) {
+var fetch_tweets = function(options) {
+    $.get("/search", options.query, options.success);
+};
+
+// Add a new filter to the list
+var add_filter = function(filter) {
+    if (filters.add(filter)) {
+        $("#filter-list").append(filter.toHTML());
+        return true;
+    };
+    return false;
+};
+
+// Fetch Tweets based on the active filters
+var update_tweets = function(tweets) {
+
+    var query = filters.build_query();
+
+    fetch_tweets({
+        query: query,
+        success: function(data) {
             $("#tweet-container h2").html("Tweets " + data.tweets.length + " of " + data.hits);
             var html = "";
             $("#tweet-list").fadeOut(function() {
@@ -58,42 +102,29 @@ $(document).ready(function() {
                 });
                 $(this).fadeIn();
             });
-        });
-    };
+        }
+    });
+};
 
-    // Add a new filter to the list
-    add_filter = function(filter) {
-        var current_filters = $("#filter-list");
-        var dupe = false;
-
-        // Ensure each filter is only added once
-        $.each($(".filter", current_filters), function(idx, active_filter) {
-            var active_filter = Filter.fromHTML(active_filter);
-            if (active_filter.type.toLowerCase() == filter.type.toLowerCase()) {
-                dupe = true;
-                return false;
-            }
-        });
-
-        if (dupe) { return; }
-
-        $(current_filters).append(filter.toHTML());
-    };
+$(document).ready(function() {
 
     $("#tweet-list").on("click", ".tweet-item .from_user", function(e) {
         var filter = new Filter("Username", $(this).text());
-        add_filter(filter);
-        update_tweets();
+        if (add_filter(filter)) {
+            update_tweets();
+        };
     });
 
     $("#tweet-list").on("click", ".tweet-item .iso_language_code", function(e) {
         var filter = new Filter("Language", $(this).text());
-        add_filter(filter);
-        update_tweets();
+        if (add_filter(filter)) {
+            update_tweets();
+        };
     });
 
     $("#filter-list").on("click", ".filter-remove", function(e) {
         $(this).parent().fadeOut(function() {
+            filters.remove(Filter.fromHTML(this));
             $(this).remove();
             update_tweets();
         });
