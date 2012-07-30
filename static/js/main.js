@@ -1,3 +1,10 @@
+Array.prototype.chunk = function(chunk_size) {
+    if (!this.length) {
+        return [];
+    }
+    return [this.slice(0, chunk_size)].concat(this.slice(chunk_size).chunk(chunk_size));
+};
+
 var Filter = function Filter(type, value) {
     this.type = type;
     this.value = value;
@@ -109,9 +116,9 @@ var update_tweets = function(data) {
         var facet_list = this;
         $.each(data.facets.facet_fields, function(facet_name, facet_items) {
             var facet_items_html = [];
-            for (i = 0; i < facet_items.length; i += 2) {
-                facet_items_html.push($(facet_item_tpl).tmpl({"val": facet_items[i], "num": facet_items[i+1]}).html());
-            };
+            $.each(facet_items.chunk(2), function(idx, val) {
+                facet_items_html.push($(facet_item_tpl).tmpl({"val": val[0], "num": val[1]}).html());
+            });
             $(facet_list).append($(facet_tpl).tmpl({"name": facet_name, "facet_items": facet_items_html.join("")}));
         });
         $(this).fadeIn();
@@ -136,12 +143,12 @@ var update_language_pie = function(data) {
     } else {
         var langs = data.facets.facet_fields.iso_language_code;
         var flot_data = [];
-        for (var i = 0; i < langs.length; i += 2) {
+        $.each(langs.chunk(2), function(idx, val) {
             flot_data.push({
-                label: langs[i].toUpperCase(),
-                data: (langs[i+1]/data.hits) * 100,
+                label: val[0].toUpperCase(),
+                data: (val[1]/data.hits) * 100,
             });
-        };
+        });
     };
 
     // Need to calculate "Other" language % since the facets are limited to the
