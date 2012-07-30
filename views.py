@@ -20,11 +20,9 @@ _MONGO_CLIENT = None
 
 
 def index(request):
-    """Retreive the most recent N Tweets."""
+    """Display the main template; data is loaded via AJAX after page load."""
 
-    tweets = _retrieve_tweets()
-
-    return render(request, "index.html", tweets)
+    return render(request, "index.html")
 
 
 def search(request):
@@ -60,18 +58,22 @@ def _retrieve_tweets(query="*:*", rows=25):
         "facet.limit": 10,
         "facet.mincount": 1,
         "facet.field": ["from_user", "iso_language_code"],
+        "facet.range": "created_at",
+        "facet.range.start": "NOW-1HOUR",
+        "facet.range.end": "NOW",
+        "facet.range.gap": "+1MINUTE",
     }
-
-    _log_query(query, rows, params)
 
     # Fetch the newest N Tweets. Should try/except this too...
     results = solr.search(query, sort="id desc", rows=rows, **params)
+
+    _log_query(query, rows, params, results.qtime)
 
     return {"tweets": results.docs, "hits": results.hits,
         "facets": results.facets}
 
 
-def _log_query(query, rows, params):
+def _log_query(query, rows, params, query_time):
     """Log the attributes of a Solr query to MongoDB."""
     global _MONGO_CLIENT
 
@@ -87,4 +89,5 @@ def _log_query(query, rows, params):
         "params": filter(None, query.split("+")),
         "rows": rows,
         "time": int(time.time()),
+        "query_time": query_time,
     }, **params))
