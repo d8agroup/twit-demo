@@ -66,42 +66,11 @@
                     <div id="filter-list">
                         <h2>Active Filters:</h2>
                     </div>
-                    <div id="facet-list">
-                        {% for name, values in facets.facet_fields.items %}
-                        <div class="facet">
-                        <h3>{{ name }}</h3>
-                            {% for val, num in values|chunks:2 %}
-                            <div class="facet-item">
-                                <span>
-                                {% if name == "iso_language_code" %}
-                                    {{ val|upper }}
-                                {% else %}
-                                    {{ val }}
-                                {% endif %}
-                                </span>
-                                <span>[{{ num }}]</span>
-                            </div>
-                            {% endfor %}
-                        </div>
-                        {% endfor %}
-                    </div>
+                    <div id="facet-list"></div>
                 </div>
                 <div id="tweet-container" class="span5">
-                    <h2>Most Recent {{ tweets|length }} Tweets of {{ hits }}</h2>
-                    <div id="tweet-list">
-                    {% for tweet in tweets %}
-                        <div class="tweet-item clearfix">
-                            <div class="tweet-image">
-                                <img src="{{ tweet.profile_image_url }}" height="48" width="48"/>
-                            </div>
-                            <div class="tweet-details">
-                                <span class="from_user">{{ tweet.from_user }}</span>:
-                                <span class="text">{{ tweet.text }}</span>
-                                [<span class="iso_language_code">{{ tweet.iso_language_code }}</span>]
-                            </div>
-                        </div>
-                    {% endfor %}
-                    </div>
+                    <h2></h2>
+                    <div id="tweet-list"></div>
                 </div>
                 <div id="visuals-container" class="span5">
                     <h2>Visuals, Y'all!</h2>

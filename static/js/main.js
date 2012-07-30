@@ -90,7 +90,6 @@ var remove_filter = function(filter, el) {
 // Fetch Tweets based on the active filters
 var update_tweets = function(data) {
 
-    console.log('in update tweets func', data);
     $("#tweet-container h2").html("Most Recent " + data.tweets.length + " Tweets of " + data.hits);
     var html = "";
     $("#tweet-list").fadeOut(function() {
@@ -128,7 +127,6 @@ var redraw = function() {
 
 var update_language_pie = function(data) {
 
-    console.log('in language pie func');
     if (!data) {
         var data = [
             { label: "S1", data: 25 },
@@ -138,7 +136,6 @@ var update_language_pie = function(data) {
     } else {
         var langs = data.facets.facet_fields.iso_language_code;
         var flot_data = [];
-        console.log(langs);
         for (var i = 0; i < langs.length; i += 2) {
             flot_data.push({
                 label: langs[i].toUpperCase(),
@@ -179,5 +176,6 @@ $(document).ready(function() {
         };
     });
 
+    redraw();
     update_language_pie();
 });
