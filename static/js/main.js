@@ -1,7 +1,7 @@
 Array.prototype.chunk = function(chunk_size) {
     if (!this.length) {
         return [];
-    }
+    };
     return [this.slice(0, chunk_size)].concat(this.slice(chunk_size).chunk(chunk_size));
 };
 
@@ -20,7 +20,7 @@ Filter.template = null;
 Filter.fromHTML = function(html) {
     return new Filter(
         $(".filter-type", html).text().toLowerCase(),
-        $(".filter-value", html).text()
+        $(".filter-value", html).text().trim()
     );
 };
 
@@ -54,6 +54,9 @@ var ActiveFilters = function() {
     this.build_query = function() {
         var query = [];
         $.each(this.filters, function(idx, filter) {
+            if (filter.type == "iso_language_code") {
+                filter.value = filter.value.toLowerCase();
+            };
             query.push(filter.type + "=" + filter.value);
         });
         return query.join("&");
@@ -77,9 +80,8 @@ var App = {
     add_filter: function(filter) {
         if (this.active_filters.add(filter)) {
             $(filter.toHTML()).hide().appendTo("#filter-list").fadeIn();
-            return true;
+            this.draw();
         };
-        return false;
     },
 
     // Remove an active filter
@@ -88,20 +90,18 @@ var App = {
             $(el).fadeOut(function() {
                 $(this).remove();
             });
-            return true;
+            this.draw();
         };
-        return false;
     },
 
     // Fetch Tweets based on the active filters
     update_tweets: function(data) {
 
         $("#tweet-container h2").html("Most Recent " + data.tweets.length + " Tweets of " + data.hits);
-        var html = "";
         $("#tweet-list").fadeOut(function() {
-            $(this).html("");
             var tpl = $("#tweet-item-tpl");
             var tweet_list = this;
+            $(this).html("");
             $.each(data.tweets, function(idx, tweet) {
                 $(tweet_list).append($(tpl).tmpl({"tweet": tweet}));
             });
@@ -110,15 +110,14 @@ var App = {
 
         $("#facet-list").fadeOut(function() {
             var facet_tpl = $("#facet-tpl");
-            var facet_item_tpl = $("#facet-item-tpl");
-            $(this).html("");
             var facet_list = this;
+            $(this).html("");
             $.each(data.facets.facet_fields, function(facet_name, facet_items) {
-                var facet_items_html = [];
+                var chunked_items = [];
                 $.each(facet_items.chunk(2), function(idx, val) {
-                    facet_items_html.push($(facet_item_tpl).tmpl({"val": val[0], "num": val[1]}).html());
+                    chunked_items.push({"value": val[0], "count": val[1]});
                 });
-                $(facet_list).append($(facet_tpl).tmpl({"name": facet_name, "facet_items": facet_items_html.join("")}));
+                $(facet_list).append($(facet_tpl).tmpl({"name": facet_name, "facet_items": chunked_items}));
             });
             $(this).fadeIn();
         });
@@ -164,24 +163,16 @@ $(document).ready(function() {
 
     App.draw();
 
-    $("#tweet-list").on("click", ".tweet-item .from_user", function(e) {
-        var filter = new Filter("Username", $(this).text());
-        if (App.add_filter(filter)) {
-            App.draw();
-        };
-    });
-
-    $("#tweet-list").on("click", ".tweet-item .iso_language_code", function(e) {
-        var filter = new Filter("Language", $(this).text());
-        if (App.add_filter(filter)) {
-            App.draw();
-        };
+    $("#tweet-list, #facet-list").on("click", ".filterable", function(e) {
+        var filter = new Filter(
+            $(this).attr("class").split(" ")[0],
+            $(this).text().trim()
+        );
+        App.add_filter(filter);
     });
 
     $("#filter-list").on("click", ".filter-remove", function(e) {
         var filter = Filter.fromHTML($(this).parent());
-        if (App.remove_filter(filter, $(this).parent())) {
-            App.draw();
-        };
+        App.remove_filter(filter, $(this).parent());
     });
 });

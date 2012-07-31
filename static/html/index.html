@@ -31,9 +31,9 @@
                     <img src="${ tweet.profile_image_url }" height="48" width="48"/>
                 </div>
                 <div class="tweet-details">
-                <span class="from_user">${ tweet.from_user }</span>:
-                <span class="text">${ tweet.text }</span>
-                [<span class="iso_language_code">${ tweet.iso_language_code }</span>]
+                    <span class="from_user filterable">${ tweet.from_user }</span>:
+                    <span class="text">${ tweet.text }</span>
+                    [<span class="iso_language_code filterable">${ tweet.iso_language_code.toUpperCase() }</span>]
                 </div>
             </div>
         </script>
@@ -41,20 +41,18 @@
         <script id="facet-tpl" type="text/x-jquery-tpl">
             <div class="facet">
                 <h3>${ name }</h3>
-                {{ if name == "iso_language_code" }}
-                    {{ html facet_items.toUpperCase() }}
-                {{ else }}
-                    {{ html facet_items }}
-                {{ /if }}
-            </div>
-        </script>
-        {% endverbatim %}
-        {% verbatim %}
-        <script id="facet-item-tpl" type="text/x-jquery-tpl">
-            <div>
+                {{ each(value, count) facet_items }}
                 <div class="facet-item">
-                    <span>${ val }</span> <span>[${ num }]</span>
+                    <span class="${ name } facet-value filterable">
+                        {{ if name == "iso_language_code" }}
+                            ${ value.toUpperCase() }
+                        {{ else }}
+                            ${ value }
+                        {{ /if }}
+                    </span>
+                    <span class="facet-count">[${ count}]</span>
                 </div>
+                {{ /each }}
             </div>
         </script>
         {% endverbatim %}

@@ -10,14 +10,8 @@ from django.shortcuts import render
 
 import settings
 
-#XXX: This is an ugly hack
-FILTER_MAP = {
-    "username": "from_user",
-    "language": "iso_language_code",
-}
 
 _MONGO_CLIENT = None
-
 
 def index(request):
     """Display the main template; data is loaded via AJAX after page load."""
@@ -32,11 +26,7 @@ def search(request):
     tweets = []
 
     for q_type, q_value in request.GET.iteritems():
-        q_type = q_type.lower()
-        if q_type not in FILTER_MAP.keys():
-            continue
-        q_type = FILTER_MAP[q_type]
-        filters.append("+%s:%s" % (q_type, q_value))
+        filters.append("+%s:%s" % (q_type.lower(), q_value))
 
     query = " ".join(filters)
 
