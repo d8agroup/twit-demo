@@ -60,129 +60,128 @@ var ActiveFilters = function() {
     };
 };
 
-// TODO: Move everything into App's scope
 var App = {
     active_filters: new ActiveFilters(),
-};
 
-var fetch_tweets = function(callbacks) {
-    query = App.active_filters.build_query();
-    $.get("/search", query, function(data) {
-        $.each(callbacks, function(idx, cb) {
-            cb.apply(this, [data]);
-        });
-    });
-};
-
-// Add a new filter to the list
-var add_filter = function(filter) {
-    if (App.active_filters.add(filter)) {
-        $(filter.toHTML()).hide().appendTo("#filter-list").fadeIn();
-        return true;
-    };
-    return false;
-};
-
-// Remove an active filter
-var remove_filter = function(filter, el) {
-    if (App.active_filters.remove(filter)) {
-        $(el).fadeOut(function() {
-            $(this).remove();
-        });
-        return true;
-    };
-    return false;
-};
-
-// Fetch Tweets based on the active filters
-var update_tweets = function(data) {
-
-    $("#tweet-container h2").html("Most Recent " + data.tweets.length + " Tweets of " + data.hits);
-    var html = "";
-    $("#tweet-list").fadeOut(function() {
-        $(this).html("");
-        var tpl = $("#tweet-item-tpl");
-        var tweet_list = this;
-        $.each(data.tweets, function(idx, tweet) {
-            $(tweet_list).append($(tpl).tmpl({"tweet": tweet}));
-        });
-        $(this).fadeIn();
-    });
-
-    $("#facet-list").fadeOut(function() {
-        var facet_tpl = $("#facet-tpl");
-        var facet_item_tpl = $("#facet-item-tpl");
-        $(this).html("");
-        var facet_list = this;
-        $.each(data.facets.facet_fields, function(facet_name, facet_items) {
-            var facet_items_html = [];
-            $.each(facet_items.chunk(2), function(idx, val) {
-                facet_items_html.push($(facet_item_tpl).tmpl({"val": val[0], "num": val[1]}).html());
-            });
-            $(facet_list).append($(facet_tpl).tmpl({"name": facet_name, "facet_items": facet_items_html.join("")}));
-        });
-        $(this).fadeIn();
-    });
-};
-
-var redraw = function() {
-    fetch_tweets([
-        update_tweets,
-        update_language_pie,
-    ]);
-};
-
-var update_language_pie = function(data) {
-
-    if (!data) {
-        var data = [
-            { label: "S1", data: 25 },
-            { label: "S2", data: 50 },
-            { label: "S3", data: 25 },
-        ];
-    } else {
-        var langs = data.facets.facet_fields.iso_language_code;
-        var flot_data = [];
-        $.each(langs.chunk(2), function(idx, val) {
-            flot_data.push({
-                label: val[0].toUpperCase(),
-                data: (val[1]/data.hits) * 100,
+    // Retrieve Tweets from the server
+    fetch_tweets: function(callbacks) {
+        query = this.active_filters.build_query();
+        $.get("/search", query, function(data) {
+            $.each(callbacks, function(idx, cb) {
+                cb.call(this, data);
             });
         });
-    };
+    },
 
-    // Need to calculate "Other" language % since the facets are limited to the
-    // top 10. That or always return all facets and limit in the UI.
+    // Add a new filter
+    add_filter: function(filter) {
+        if (this.active_filters.add(filter)) {
+            $(filter.toHTML()).hide().appendTo("#filter-list").fadeIn();
+            return true;
+        };
+        return false;
+    },
 
-    $.plot($("#language-pie"), flot_data, {
-        series: { pie: { show: true } },
-        legend: { show: false },
-    });
+    // Remove an active filter
+    remove_filter: function(filter, el) {
+        if (this.active_filters.remove(filter)) {
+            $(el).fadeOut(function() {
+                $(this).remove();
+            });
+            return true;
+        };
+        return false;
+    },
+
+    // Fetch Tweets based on the active filters
+    update_tweets: function(data) {
+
+        $("#tweet-container h2").html("Most Recent " + data.tweets.length + " Tweets of " + data.hits);
+        var html = "";
+        $("#tweet-list").fadeOut(function() {
+            $(this).html("");
+            var tpl = $("#tweet-item-tpl");
+            var tweet_list = this;
+            $.each(data.tweets, function(idx, tweet) {
+                $(tweet_list).append($(tpl).tmpl({"tweet": tweet}));
+            });
+            $(this).fadeIn();
+        });
+
+        $("#facet-list").fadeOut(function() {
+            var facet_tpl = $("#facet-tpl");
+            var facet_item_tpl = $("#facet-item-tpl");
+            $(this).html("");
+            var facet_list = this;
+            $.each(data.facets.facet_fields, function(facet_name, facet_items) {
+                var facet_items_html = [];
+                $.each(facet_items.chunk(2), function(idx, val) {
+                    facet_items_html.push($(facet_item_tpl).tmpl({"val": val[0], "num": val[1]}).html());
+                });
+                $(facet_list).append($(facet_tpl).tmpl({"name": facet_name, "facet_items": facet_items_html.join("")}));
+            });
+            $(this).fadeIn();
+        });
+    },
+
+    draw: function() {
+        this.fetch_tweets([
+            this.update_tweets,
+            this.update_language_pie,
+        ]);
+    },
+
+    update_language_pie: function(data) {
+
+        if (!data) {
+            var data = [
+                { label: "S1", data: 25 },
+                { label: "S2", data: 50 },
+                { label: "S3", data: 25 },
+            ];
+        } else {
+            var langs = data.facets.facet_fields.iso_language_code;
+            var flot_data = [];
+            $.each(langs.chunk(2), function(idx, val) {
+                flot_data.push({
+                    label: val[0].toUpperCase(),
+                    data: (val[1]/data.hits) * 100,
+                });
+            });
+        };
+
+        // Need to calculate "Other" language % since the facets are limited to the
+        // top 10. That or always return all facets and limit in the UI.
+
+        $.plot($("#language-pie"), flot_data, {
+            series: { pie: { show: true } },
+            legend: { show: false },
+        });
+    },
 };
 
 $(document).ready(function() {
 
+    App.draw();
+
     $("#tweet-list").on("click", ".tweet-item .from_user", function(e) {
         var filter = new Filter("Username", $(this).text());
-        if (add_filter(filter)) {
-            redraw();
+        if (App.add_filter(filter)) {
+            App.draw();
         };
     });
 
     $("#tweet-list").on("click", ".tweet-item .iso_language_code", function(e) {
         var filter = new Filter("Language", $(this).text());
-        if (add_filter(filter)) {
-            redraw();
+        if (App.add_filter(filter)) {
+            App.draw();
         };
     });
 
     $("#filter-list").on("click", ".filter-remove", function(e) {
         var filter = Filter.fromHTML($(this).parent());
-        if (remove_filter(filter, $(this).parent())) {
-            redraw();
+        if (App.remove_filter(filter, $(this).parent())) {
+            App.draw();
         };
     });
-
-    redraw();
-    update_language_pie();
 });
