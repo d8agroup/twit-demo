@@ -96,8 +96,13 @@ var App = {
 
     // Fetch Tweets based on the active filters
     update_tweets: function(data) {
-
-        $("#tweet-container h2").html("Most Recent " + data.tweets.length + " Tweets of " + data.hits);
+        var heading = "Most Recent " + data.tweets.length + " Tweets of " + data.hits;
+        if (App.active_filters.filters.length) {
+            heading = heading + " [filtered]";
+        };
+        $("#tweet-container h2").fadeOut(function () {
+                $(this).html(heading).fadeIn();
+        });
         $("#tweet-list").fadeOut(function() {
             var tpl = $("#tweet-item-tpl");
             var tweet_list = this;
@@ -165,10 +170,17 @@ $(document).ready(function() {
 
     $("#tweet-list, #facet-list").on("click", ".filterable", function(e) {
         var filter = new Filter(
-            $(this).attr("class").split(" ")[0],
-            $(this).text().trim()
+            $(this).attr("class").split(" ")[0], $(this).text().trim()
         );
         App.add_filter(filter);
+    });
+
+    $("#search-form").on("submit", function(e) {
+        e.preventDefault();
+        var el = $("#search-query", this);
+        var filter = new Filter("text", $(el).val());
+        App.add_filter(filter);
+        $(el).val("");
     });
 
     $("#filter-list").on("click", ".filter-remove", function(e) {
