@@ -1,0 +1,16 @@
+<VirtualHost *:80>
+    DocumentRoot /usr/local/metaLayer-twit-demo/releases/current
+    Header set Access-Control-Allow-Origin *
+    <Directory /usr/local/metaLayer-twit-demo/releases/current>
+        Order allow,deny
+        Allow from all
+    </Directory>
+
+    ErrorLog /var/log/apache2/error-twit-demo.log
+    CustomLog /var/log/apache2/access-twit-demo.log combined
+
+    Alias /static/ /usr/local/metaLayer-twit-demo/releases/current/static/
+    WSGIScriptAlias / /usr/local/metaLayer-twit-demo/releases/current/wsgi.py
+    WSGIDaemonProcess twit-demo user=www-data processes=2 threads=10 display-name=%{GROUP} python-path=/usr/local/metaLayer-twit-demo/releases/current:/usr/local/metaLayer-twit-demo/lib/python2.6/site-packages
+    WSGIProcessGroup twit-demo
+</VirtualHost>

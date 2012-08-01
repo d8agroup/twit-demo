@@ -131,7 +131,7 @@ LOGGING = {
             'level': 'INFO',
             'class': 'logging.handlers.RotatingFileHandler',
             'formatter': 'verbose',
-            'filename': 'poll_twitter.log',
+            'filename': '/var/log/twit-demo/poll_twitter.log',
             'maxBytes': 1024 * 1024 * 5, # 5MB
         },
     },
