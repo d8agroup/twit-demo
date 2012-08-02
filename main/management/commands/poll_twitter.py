@@ -23,7 +23,7 @@ class Command(BaseCommand):
 
     fields = ("created_at", "id", "from_user", "from_user_name", "geo",
         "iso_language_code", "profile_image_url", "text", "to_user")
-    max_index_size = 1000000
+    max_index_size = 25000000
     delete_chunk_size = 500
 
     def __init__(self):
