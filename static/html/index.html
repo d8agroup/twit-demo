@@ -12,6 +12,7 @@
         <script src="http://ajax.microsoft.com/ajax/jquery.templates/beta1/jquery.tmpl.min.js" type="text/javascript"></script>
         <script src="{{ STATIC_URL }}js/flot/jquery.flot.js" type="text/javascript"></script>
         <script src="{{ STATIC_URL }}js/flot/jquery.flot.pie.js" type="text/javascript"></script>
+        <script src="{{ STATIC_URL }}js/jquery.linkify.js" type="text/javascript"></script>
         <script src="{{ STATIC_URL }}js/main.js" type="text/javascript"></script>
         <!--[if lt IE 8]>
         <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
@@ -25,6 +26,7 @@
                 <span class="filter-remove">X</span>
             </div>
         </script>
+        {% verbatim %}
         <script id="tweet-item-tpl" type="text/x-jquery-tmpl">
             <div class="tweet-item clearfix">
                 <div class="tweet-image">
@@ -32,11 +34,12 @@
                 </div>
                 <div class="tweet-details">
                     <span class="from_user filterable">${ tweet.from_user }</span>:
-                    <span class="text">${ tweet.text }</span>
+                    <span class="text">{{ html tweet.text }}</span>
                     [<span class="iso_language_code filterable">${ tweet.iso_language_code.toUpperCase() }</span>]
                 </div>
             </div>
         </script>
+        {% endverbatim %}
         {% verbatim %}
         <script id="facet-tpl" type="text/x-jquery-tpl">
             <div class="facet">

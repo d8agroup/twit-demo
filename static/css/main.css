@@ -36,6 +36,11 @@
     cursor: pointer;
 }
 
+.text .filterable {
+    font-weight: bold;
+    cursor: pointer;
+}
+
 .filter {
     background-color: #BBB;
     border-radius: 3px;

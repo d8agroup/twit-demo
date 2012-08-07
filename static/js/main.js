@@ -107,7 +107,23 @@ var App = {
             var tpl = $("#tweet-item-tpl");
             var tweet_list = this;
             $(this).html("");
+            // Set some options for the linkify plugin.
+            var link_options = {
+                user: {
+                    regex: /((?:^|[^a-zA-Z0-9_!#$%&*@＠]|RT:?))([@＠])([a-zA-Z0-9_]{1,20})(\/[a-zA-Z][a-zA-Z0-9_-]{0,24})?/g,
+                    template: ' @<span class="from_user filterable">$3$4</span>'
+                },
+                link: {
+                    regex: /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig,
+                    template: '<a href="$1" target="_blank">$1</a>'
+                },
+                hash: {
+                    regex: /(^|\s)#(\w+)/g,
+                    template: ' #<span class="text filterable">$2</span>'
+                },
+            };
             $.each(data.tweets, function(idx, tweet) {
+                tweet.text = $.linkify(tweet.text, link_options);
                 $(tweet_list).append($(tpl).tmpl({"tweet": tweet}));
             });
             $(this).fadeIn();
