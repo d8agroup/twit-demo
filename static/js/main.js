@@ -124,6 +124,8 @@ var App = {
             };
             $.each(data.tweets, function(idx, tweet) {
                 tweet.text = $.linkify(tweet.text, link_options);
+                tweet.created_at = moment(tweet.created_at).format("LT D MMM YY");
+                tweet.source_url = "http://twitter.com/" + tweet.from_user + "/status/" + tweet.id;
                 $(tweet_list).append($(tpl).tmpl({"tweet": tweet}));
             });
             $(this).fadeIn();

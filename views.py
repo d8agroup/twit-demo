@@ -59,6 +59,10 @@ def _retrieve_tweets(query="*:*", rows=25):
 
     _log_query(query, rows, params, results.qtime)
 
+    # Turn all Tweet IDs into strings; JS max int is 2^53.
+    for doc in results.docs:
+        doc['id'] = str(doc['id'])
+
     return {"tweets": results.docs, "hits": results.hits,
         "facets": results.facets}
 
