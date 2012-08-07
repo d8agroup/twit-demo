@@ -36,7 +36,7 @@
                     <span class="from_user filterable">${ tweet.from_user }</span>:
                     <span class="text">{{ html tweet.text }}</span>
                     <br />
-                    [<span class="iso_language_code filterable">${ tweet.iso_language_code.toUpperCase() }</span>]
+                    [<span class="iso_language_code filterable">${ App.get_language(tweet.iso_language_code) }</span>]
                     <span class="created_at"><a href="${ tweet.source_url }" target="_blank">${ tweet.created_at }</a></span>
                 </div>
             </div>
@@ -50,7 +50,7 @@
                 <div class="facet-item">
                     <span class="${ name } facet-value filterable">
                         {{ if name == "iso_language_code" }}
-                            ${ value.toUpperCase() }
+                            ${ App.get_language(value) }
                         {{ else }}
                             ${ value }
                         {{ /if }}

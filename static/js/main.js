@@ -55,7 +55,7 @@ var ActiveFilters = function() {
         var query = [];
         $.each(this.filters, function(idx, filter) {
             if (filter.type == "iso_language_code") {
-                filter.value = filter.value.toLowerCase();
+                filter.value = App.get_language_code(filter.value);
             };
             query.push(filter.type + "=" + filter.value);
         });
@@ -65,6 +65,28 @@ var ActiveFilters = function() {
 
 var App = {
     active_filters: new ActiveFilters(),
+
+    /*
+     * These are from Twitter's supported languages API endpoint:
+     * https://api.twitter.com/1/help/languages.json
+     *
+     * Notes:
+     * vi -> Vietnamese is not in the above endpoint but is returned in
+     * search results.
+     * 'id' is specified for Indonesian  by the above endpoint but does not
+     * appear in search results while 'in' does.
+     * I believe there are several more languages that are not officially
+     * supported via the languages endpoint but are returned in search results.
+     */
+    language_mapping: {
+        ar: "Arabic", da: "Danish", de: "German", en: "English", es: "Spanish",
+        fa: "Farsi", fi: "Finnish", fil: "Filipino", fr: "French", he: "Hewbrew",
+        hi: "Hindi", hu: "Hungarian", in: "Indonesian", id: "Indonesian",
+        it: "Italian", ja: "Japnese", ko: "Korean", msa: "Malay", nl: "Dutch",
+        no: "Norwegian", pl: "Polish", pt: "Portuguese", ru: "Russian", sv: "Swedish",
+        th: "Thai", tr: "Turkish", ur: "Urdu", vi: "Vietnamese",
+        zh_cn: "Simplified Chinese", zh_tw: "Traditional Chinese"
+    },
 
     // Retrieve Tweets from the server
     fetch_tweets: function(callbacks) {
@@ -166,7 +188,7 @@ var App = {
             var flot_data = [];
             $.each(langs.chunk(2), function(idx, val) {
                 flot_data.push({
-                    label: val[0].toUpperCase(),
+                    label: App.get_language(val[0]),
                     data: (val[1]/data.hits) * 100,
                 });
             });
@@ -179,6 +201,21 @@ var App = {
             series: { pie: { show: true } },
             legend: { show: false },
         });
+    },
+
+    get_language: function(code) {
+        return this.language_mapping[code.replace("-", "_").toLowerCase()] || code
+    },
+
+    get_language_code: function(language) {
+        var return_code = language;
+        $.each(this.language_mapping, function(code, name) {
+            if (language.toLowerCase() == name.toLowerCase()) {
+                return_code = code;
+                return false;
+            };
+        });
+        return return_code;
     },
 };
 
