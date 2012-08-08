@@ -45,7 +45,7 @@
         {% verbatim %}
         <script id="facet-tpl" type="text/x-jquery-tpl">
             <div class="facet">
-                <h3>${ name }</h3>
+                <h3>${ App.facet_mapping[name] }</h3>
                 {{ each(value, count) facet_items }}
                 <div class="facet-item">
                     <span class="${ name } facet-value filterable">

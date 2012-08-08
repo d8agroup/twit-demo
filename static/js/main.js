@@ -88,6 +88,11 @@ var App = {
         zh_cn: "Simplified Chinese", zh_tw: "Traditional Chinese"
     },
 
+    facet_mapping: {
+        iso_language_code: "Top Languages",
+        from_user: "Top Users"
+    },
+
     // Retrieve Tweets from the server
     fetch_tweets: function(callbacks) {
         query = this.active_filters.build_query();
