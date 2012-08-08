@@ -74,3 +74,33 @@ def restart_webserver():
     """Restart the webserver."""
     require("hosts", provided_by=[production, staging])
     sudo("service apache2 restart")
+
+
+def cleanup(keep_num=5):
+    """Remove older releases, keeping the last `keep_num` intact."""
+
+    keep_num = int(keep_num)
+    assert keep_num > 0, "[ERROR] keep_num must be > 0; refusing to proceed."
+
+    with cd("%(path)s/packages" % env):
+        package_files = sorted(run("ls -1").split())
+        package_files = [_.replace(".tar.gz", "") for _ in package_files]
+
+    with cd("%(path)s/releases" % env):
+        release_files = sorted(run("ls -1").split())
+        release_files.remove('current')
+
+    diff = set(package_files).symmetric_difference(set(release_files))
+
+    if diff:
+        raise Exception("[ERROR]: Package and release directories are out of sync;"
+                " refusing to proceed. Please fix this difference manually: %s" % diff)
+
+    package_files = package_files[:-keep_num]
+    release_files = release_files[:-keep_num]
+
+    with cd("%(path)s/packages" % env):
+        [sudo("rm %s.tar.gz" % _) for _ in package_files]
+
+    with cd("%(path)s/releases" % env):
+        [sudo("rm -r %s" % _) for _ in release_files]
