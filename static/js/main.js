@@ -112,12 +112,20 @@ var App = {
     },
 
     // Remove an active filter
-    remove_filter: function(filter, el) {
+    remove_filter: function(filter, redraw) {
+        var redraw = (typeof redraw === "undefined") ? true : redraw;
         if (this.active_filters.remove(filter)) {
-            $(el).fadeOut(function() {
-                $(this).remove();
+            var filter_list = $("#filter-list .filter");
+            $.each(filter_list, function(idx, active_filter) {
+                if (Filter.fromHTML(active_filter).type.toLowerCase() == filter.type.toLowerCase()) {
+                    $(active_filter).fadeOut(function() {
+                        $(this).remove();
+                    });
+                };
             });
-            this.draw();
+            if (redraw) {
+                this.draw();
+            };
         };
     },
 
@@ -233,18 +241,24 @@ $(document).ready(function() {
             $(this).attr("class").split(" ")[0], $(this).text().trim()
         );
         App.add_filter(filter);
+        if (filter.type == "text") {
+            $("#search-query").val(filter.value);
+        };
     });
 
     $("#search-form").on("submit", function(e) {
         e.preventDefault();
         var el = $("#search-query", this);
         var filter = new Filter("text", $(el).val());
+        App.remove_filter(new Filter("text"), false);
         App.add_filter(filter);
-        $(el).val("");
     });
 
     $("#filter-list").on("click", ".filter-remove", function(e) {
         var filter = Filter.fromHTML($(this).parent());
-        App.remove_filter(filter, $(this).parent());
+        App.remove_filter(filter);
+        if (filter.type == "text") {
+            $("#search-query").val("");
+        };
     });
 });
