@@ -145,9 +145,9 @@ LOGGING = {
 
 SOLR_CONNECTION = {
     'twit-demo': {
-        'ENGINE': 'haystack.backends.solr_backend.SolrEngine',
         'URL': 'http://127.0.0.1:8983/solr'
     },
 }
 
-SEARCH_TERMS = ('#olympics', '#london2012',)
+#SEARCH_TERMS = ('#olympics', '#london2012',)
+SEARCH_TERMS = ('Herman Miller', 'WWE', 'Joseph Abboud')
