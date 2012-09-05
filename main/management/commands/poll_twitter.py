@@ -11,6 +11,7 @@ import logging
 
 import tweepy
 import pysolr
+import pymongo
 from django.core.management.base import BaseCommand
 
 import settings
@@ -32,6 +33,7 @@ class Command(BaseCommand):
         # This can raise an exception; intentionally uncaught
         self.solr = pysolr.Solr(settings.SOLR_CONNECTION['twit-demo']['URL'])
         self.twitter = tweepy.API()
+        self.mongo = pymongo.Connection(host="127.0.0.1", port=27017)
         self.log = logging.getLogger(__name__)
 
         super(Command, self).__init__()
@@ -41,30 +43,43 @@ class Command(BaseCommand):
         and add them to the Solr index.
         """
 
-        query = " OR ".join(settings.SEARCH_TERMS)
+        for query in settings.SEARCH_TERMS:
 
-        self.log.info("Polling Twitter for query '%s'" % query)
+            self.log.info("Polling Twitter for query '%s'" % query)
 
-        # Cursor is the last Tweet ID we've seen for this query
-        cursor = self._retrieve_cursor()
-        tweets = self._retrieve_tweets(query, since_id=cursor)
-        self._truncate_index(len(tweets))
-        self._index_tweets(tweets)
+            # Cursor is the last Tweet ID we've seen for this query
+            cursor = self._retrieve_cursor(query)
+            max_id, tweets = self._retrieve_tweets(query, since_id=cursor)
+            self._update_cursor(query, max_id)
+            self._truncate_index(len(tweets))
+            self._index_tweets(tweets)
 
-    def _retrieve_cursor(self):
-        """Retrieve the max Tweet ID for this query using the Solr index."""
+    def _retrieve_cursor(self, query):
+        """Retrieve the max Tweet ID for this query."""
 
-        results = self.solr.search("*:*", fl="id", sort="id desc", rows=1)
+        max_id = self.mongo.twit_demo.tweet_ids.find_one({'query': query}) or 0
 
-        if not results.docs:
-            self.log.warn("No Tweets found in index, starting fresh.")
+        if not max_id:
+            self.log.warn("No max_id found, starting fresh.")
+        else:
+            max_id = max_id['max_id']
+            self.log.info("Max Tweet ID: %d." % max_id)
+
+        return max_id
+
+    def _update_cursor(self, query, max_id):
+        """Update the max Tweet ID seen for this query."""
+
+        if not max_id:
             return
 
-        num_docs = results.docs[0]['id']
+        self.log.info("Updating max_id to %d for query '%s'" % (max_id, query))
 
-        self.log.info("Max Tweet ID from Solr index: %d." % num_docs)
-
-        return num_docs
+        self.mongo.twit_demo.tweet_ids.update(
+            {'query': query},
+            {'$set': {'max_id': max_id}},
+            upsert=True
+        )
 
     def _retrieve_tweets(self, query, since_id=None):
         """Retrieve the latest Tweets for the given query. Optionally can
@@ -96,7 +111,7 @@ class Command(BaseCommand):
         max_id = max([t.id for t in tweets] or [since_id])
         self.log.info("Max Tweet ID from Twitter API: %s" % max_id)
 
-        return tweets
+        return max_id, tweets
 
     def _truncate_index(self, num):
         """Query Solr to determine the number of documents currently in the

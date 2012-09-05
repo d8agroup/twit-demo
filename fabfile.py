@@ -58,7 +58,8 @@ def install_requirements():
 def setup_webserver():
     require("release", provided_by=[deploy])
     sudo("a2enmod headers")
-    sudo("rm /etc/apache2/sites-enabled/000-default")
+    with settings(warn_only=True):
+        sudo("rm /etc/apache2/sites-enabled/000-default")
     with cd("%(path)s/releases/%(release)s" % env):
         put("assets/apache2/vhost", "/etc/apache2/sites-enabled/metaLayer-twit-demo", use_sudo=True)
 
